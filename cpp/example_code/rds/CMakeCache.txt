@@ -139,7 +139,7 @@ CMAKE_OBJCOPY:FILEPATH=/usr/bin/objcopy
 CMAKE_OBJDUMP:FILEPATH=/usr/bin/objdump
 
 //Value Computed by CMake
-CMAKE_PROJECT_NAME:STATIC=ec2-examples
+CMAKE_PROJECT_NAME:STATIC=rds-examples
 
 //Path to a program.
 CMAKE_RANLIB:FILEPATH=/usr/bin/ranlib
@@ -241,6 +241,12 @@ ec2-examples_BINARY_DIR:STATIC=/home/tg/WS/aws-doc-sdk-examples/cpp/example_code
 
 //Value Computed by CMake
 ec2-examples_SOURCE_DIR:STATIC=/home/tg/WS/aws-doc-sdk-examples/cpp/example_code/rds
+
+//Value Computed by CMake
+rds-examples_BINARY_DIR:STATIC=/home/tg/WS/aws-doc-sdk-examples/cpp/example_code/rds
+
+//Value Computed by CMake
+rds-examples_SOURCE_DIR:STATIC=/home/tg/WS/aws-doc-sdk-examples/cpp/example_code/rds
 
 //The directory containing a CMake configuration file for s2n.
 s2n_DIR:PATH=/usr/local/lib/s2n/cmake

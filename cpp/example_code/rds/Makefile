@@ -111,44 +111,44 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named generate_auth_token
+# Target rules for targets named postgresql_conn_token_auth
 
 # Build rule for target.
-generate_auth_token: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 generate_auth_token
-.PHONY : generate_auth_token
+postgresql_conn_token_auth: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 postgresql_conn_token_auth
+.PHONY : postgresql_conn_token_auth
 
 # fast build rule for target.
-generate_auth_token/fast:
-	$(MAKE) -f CMakeFiles/generate_auth_token.dir/build.make CMakeFiles/generate_auth_token.dir/build
-.PHONY : generate_auth_token/fast
+postgresql_conn_token_auth/fast:
+	$(MAKE) -f CMakeFiles/postgresql_conn_token_auth.dir/build.make CMakeFiles/postgresql_conn_token_auth.dir/build
+.PHONY : postgresql_conn_token_auth/fast
 
-generate_auth_token.o: generate_auth_token.cpp.o
+postgresql_conn_token_auth.o: postgresql_conn_token_auth.cpp.o
 
-.PHONY : generate_auth_token.o
+.PHONY : postgresql_conn_token_auth.o
 
 # target to build an object file
-generate_auth_token.cpp.o:
-	$(MAKE) -f CMakeFiles/generate_auth_token.dir/build.make CMakeFiles/generate_auth_token.dir/generate_auth_token.cpp.o
-.PHONY : generate_auth_token.cpp.o
+postgresql_conn_token_auth.cpp.o:
+	$(MAKE) -f CMakeFiles/postgresql_conn_token_auth.dir/build.make CMakeFiles/postgresql_conn_token_auth.dir/postgresql_conn_token_auth.cpp.o
+.PHONY : postgresql_conn_token_auth.cpp.o
 
-generate_auth_token.i: generate_auth_token.cpp.i
+postgresql_conn_token_auth.i: postgresql_conn_token_auth.cpp.i
 
-.PHONY : generate_auth_token.i
+.PHONY : postgresql_conn_token_auth.i
 
 # target to preprocess a source file
-generate_auth_token.cpp.i:
-	$(MAKE) -f CMakeFiles/generate_auth_token.dir/build.make CMakeFiles/generate_auth_token.dir/generate_auth_token.cpp.i
-.PHONY : generate_auth_token.cpp.i
+postgresql_conn_token_auth.cpp.i:
+	$(MAKE) -f CMakeFiles/postgresql_conn_token_auth.dir/build.make CMakeFiles/postgresql_conn_token_auth.dir/postgresql_conn_token_auth.cpp.i
+.PHONY : postgresql_conn_token_auth.cpp.i
 
-generate_auth_token.s: generate_auth_token.cpp.s
+postgresql_conn_token_auth.s: postgresql_conn_token_auth.cpp.s
 
-.PHONY : generate_auth_token.s
+.PHONY : postgresql_conn_token_auth.s
 
 # target to generate assembly for a file
-generate_auth_token.cpp.s:
-	$(MAKE) -f CMakeFiles/generate_auth_token.dir/build.make CMakeFiles/generate_auth_token.dir/generate_auth_token.cpp.s
-.PHONY : generate_auth_token.cpp.s
+postgresql_conn_token_auth.cpp.s:
+	$(MAKE) -f CMakeFiles/postgresql_conn_token_auth.dir/build.make CMakeFiles/postgresql_conn_token_auth.dir/postgresql_conn_token_auth.cpp.s
+.PHONY : postgresql_conn_token_auth.cpp.s
 
 # Help Target
 help:
@@ -157,11 +157,11 @@ help:
 	@echo "... clean"
 	@echo "... depend"
 	@echo "... rebuild_cache"
-	@echo "... generate_auth_token"
+	@echo "... postgresql_conn_token_auth"
 	@echo "... edit_cache"
-	@echo "... generate_auth_token.o"
-	@echo "... generate_auth_token.i"
-	@echo "... generate_auth_token.s"
+	@echo "... postgresql_conn_token_auth.o"
+	@echo "... postgresql_conn_token_auth.i"
+	@echo "... postgresql_conn_token_auth.s"
 .PHONY : help
 
 

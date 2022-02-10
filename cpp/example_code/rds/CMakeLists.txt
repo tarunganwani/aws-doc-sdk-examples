@@ -8,14 +8,14 @@
 # specific language governing permissions and limitations under the License.
 
 cmake_minimum_required(VERSION 3.2)
-project(ec2-examples)
+project(rds-examples)
 set (CMAKE_CXX_STANDARD 11)
 
 # Locate the aws sdk for c++ package.
 find_package(AWSSDK REQUIRED COMPONENTS rds)
 
 set(EXAMPLES "")
-list(APPEND EXAMPLES "generate_auth_token")
+list(APPEND EXAMPLES "postgresql_conn_token_auth")
 
 # The executables to build.
 foreach(EXAMPLE IN LISTS EXAMPLES)
