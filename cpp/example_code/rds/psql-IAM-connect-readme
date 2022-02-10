@@ -1,0 +1,19 @@
+
+create db user with iam role grants
+https://aws.amazon.com/premiumsupport/knowledge-center/rds-postgresql-connect-using-iam/
+
+https://www.youtube.com/watch?v=o4Sf5Z6E2lk
+
+grant priveleges 
+GRANT ALL PRIVILEGES ON DATABASE "testdb" to db_user_tg;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO db_user_tg;
+
+export RDSHOST="postgresql-instance.cg4dwrdzyoeq.ap-south-1.rds.amazonaws.com"
+export PGPASSWORD="$(aws rds generate-db-auth-token --hostname $RDSHOST --port 5432 --region ap-south-1 --username db_user_tg)"
+wget https://s3.amazonaws.com/rds-downloads/rds-ca-2019-root.pem
+
+psql -h $RDSHOST -p 5432 "dbname=testdb user=db_user_tg sslmode=verify-full sslrootcert=rds-ca-2019-root.pem"
+OR
+psql "host=postgresql-instance.cg4dwrdzyoeq.ap-south-1.rds.amazonaws.com dbname=testdb user=db_user_tg sslmode=verify-full sslrootcert=rds-ca-2019-root.pem"
+OR
+psql "host=postgresql-instance.cg4dwrdzyoeq.ap-south-1.rds.amazonaws.com dbname=testdb user=db_user_tg sslmode=verify-full sslrootcert=/home/tg/aws/rds-ca-2019-root.pem"

@@ -1,0 +1,21 @@
+## postgres includes required
+
+$POSTGRES_ROOT/src/interfaces/libpq
+$POSTGRES_ROOT/src/include
+
+## postgres libs required
+
+libpq
+
+## other requirements
+
+aws-cpp-sdk
+
+
+## compile
+
+/usr/bin/c++  -std=gnu++11 -I/home/tg/WS/postgres/src/interfaces/libpq -I/home/tg/WS/postgres/src/include -o postgresql_conn_token_auth.cpp.o -c /home/tg/WS/aws-doc-sdk-examples/cpp/example_code/rds/postgresql_conn_token_auth.cpp
+
+## link
+
+/usr/bin/c++    -rdynamic postgresql_conn_token_auth.cpp.o  -o postgresql_conn_token_auth -Wl,-rpath,/usr/local/lib /usr/local/lib/libaws-cpp-sdk-rds.so /usr/local/lib/libaws-cpp-sdk-core.so -lpq -L/home/tg/WS/postgres/src/interfaces/libpq 
