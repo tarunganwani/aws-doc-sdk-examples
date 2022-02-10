@@ -1,162 +1,304 @@
- 
-//snippet-sourcedescription:[start_stop_instance.cpp demonstrates how to start and stop an Amazon EC2 instance.]
-//snippet-keyword:[C++]
-//snippet-sourcesyntax:[cpp]
-//snippet-keyword:[Code Sample]
-//snippet-keyword:[Amazon EC2]
-//snippet-service:[ec2]
-//snippet-sourcetype:[full-example]
-//snippet-sourcedate:[]
-//snippet-sourceauthor:[AWS]
-
-
-/*
-   Copyright 2010-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-
-   This file is licensed under the Apache License, Version 2.0 (the "License").
-   You may not use this file except in compliance with the License. A copy of
-   the License is located at
-
-    http://aws.amazon.com/apache2.0/
-
-   This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-   CONDITIONS OF ANY KIND, either express or implied. See the License for the
-   specific language governing permissions and limitations under the License.
-*/
-//snippet-start:[ec2.cpp.start_instance.inc]
 #include <aws/core/Aws.h>
 #include <aws/rds/RDSClient.h>
-/*#include <aws/ec2/EC2Client.h>
-#include <aws/ec2/model/StartInstancesRequest.h>
-#include <aws/ec2/model/StartInstancesResponse.h>
-//snippet-end:[ec2.cpp.start_instance.inc]
-//snippet-start:[ec2.cpp.stop_instance.inc]
-#include <aws/ec2/model/StopInstancesRequest.h>
-#include <aws/ec2/model/StopInstancesResponse.h>
-//snippet-end:[ec2.cpp.stop_instance.inc]*/
 #include <iostream>
 
-/*void StartInstance(const Aws::String& instance_id)
-{
-    // snippet-start:[ec2.cpp.start_instance.code]
-    Aws::EC2::EC2Client ec2;
-
-    Aws::EC2::Model::StartInstancesRequest start_request;
-    start_request.AddInstanceIds(instance_id);
-    start_request.SetDryRun(true);
-
-    auto dry_run_outcome = ec2.StartInstances(start_request);
-    assert(!dry_run_outcome.IsSuccess());
-    if (dry_run_outcome.GetError().GetErrorType() !=
-        Aws::EC2::EC2Errors::DRY_RUN_OPERATION)
-    {
-        std::cout << "Failed dry run to start instance " << instance_id << ": "
-            << dry_run_outcome.GetError().GetMessage() << std::endl;
-        return;
-    }
-
-    start_request.SetDryRun(false);
-    auto start_instancesOutcome = ec2.StartInstances(start_request);
-
-    if (!start_instancesOutcome.IsSuccess())
-    {
-        std::cout << "Failed to start instance " << instance_id << ": " <<
-            start_instancesOutcome.GetError().GetMessage() << std::endl;
-    }
-    else
-    {
-        std::cout << "Successfully started instance " << instance_id <<
-            std::endl;
-    }
-    // snippet-end:[ec2.cpp.start_instance.code]
+extern "C"{
+    #include "libpq-fe.h"
 }
 
-void StopInstance(const Aws::String& instance_id)
-{
-    // snippet-start:[ec2.cpp.stop_instance.code]
-    Aws::EC2::EC2Client ec2;
-    Aws::EC2::Model::StopInstancesRequest request;
-    request.AddInstanceIds(instance_id);
-    request.SetDryRun(true);
+namespace aws_rds_demo{
 
-    auto dry_run_outcome = ec2.StopInstances(request);
-    assert(!dry_run_outcome.IsSuccess());
+    int ConnectToPostgresSql(const char *connString);
+    void ExitNicely(PGconn *conn);
 
-    if (dry_run_outcome.GetError().GetErrorType() !=
-        Aws::EC2::EC2Errors::DRY_RUN_OPERATION)
-    {
-        std::cout << "Failed dry run to stop instance " << instance_id << ": "
-            << dry_run_outcome.GetError().GetMessage() << std::endl;
-        return;
-    }
+    //Print Utils
+    void PrintInfo(const char *msg);
+    void PrintError(const char *msg);
+    void PrintDebug(const char *msg);
 
-    request.SetDryRun(false);
-    auto outcome = ec2.StopInstances(request);
-    if (!outcome.IsSuccess())
-    {
-        std::cout << "Failed to stop instance " << instance_id << ": " <<
-            outcome.GetError().GetMessage() << std::endl;
-    }
-    else
-    {
-        std::cout << "Successfully stopped instance " << instance_id <<
-            std::endl;
-    }
-    // snippet-end:[ec2.cpp.stop_instance.code]
+    //Connection string builder
+    struct ConnStringBuilder{
+
+        ConnStringBuilder(bool isIAM);
+        std::string GetConnString(std::string host, std::string dbname, std::string user, std::string pwd, std::string sslmode, std::string sslrootcert);
+
+    private:
+        void InitConnString(bool isIAM);
+        void BuildHost(std::string host);
+        void BuildUser(std::string user);
+        void BuildPassword(std::string password);
+        void BuildDbname(std::string dbname);
+        void BuildSslMode(std::string sslmode);
+        void BuildSslRootCert(std::string sslrootcert);
+
+        std::string m_strConn;
+        bool        m_bIsIAM;
+    };
 }
 
-void PrintUsage()
-{
-    std::cout << "Usage: start_stop_instance <instance_id> <start|stop>" <<
-        std::endl;
-}*/
 
-/**
- * Stops or starts an ec2 instance based on command line input
- */
+
+/////////////////////////////////////////////////////////////////////////////////////////
+//  MAIN
+/////////////////////////////////////////////////////////////////////////////////////////
+
 int main(int argc, char** argv)
 {
-    /*if (argc != 3)
-    {
-        PrintUsage();
-        return 1;
-    }*/
 
     Aws::SDKOptions options;
     Aws::InitAPI(options);
-    const Aws::Client::ClientConfiguration config("default");
-    Aws::RDS::RDSClient client(config);
-    ;
-    std::cout << "Token : " << client.GenerateConnectAuthToken("postgresql-instance.cg4dwrdzyoeq.ap-south-1.rds.amazonaws.com", "ap-south-1", 5432, "db_user_tg") << std::endl;
 
-    /*{
-        Aws::String instance_id = argv[1];
+    /////////////////////////////////////////////////////////////////////////////////////////
+    //  connection string values
+    /////////////////////////////////////////////////////////////////////////////////////////
 
-        bool start_instance;
-        if (Aws::Utils::StringUtils::CaselessCompare(argv[2], "start"))
-        {
-            start_instance = true;
-        }
-        else if (Aws::Utils::StringUtils::CaselessCompare(argv[2], "stop"))
-        {
-            start_instance = false;
-        }
-        else
-        {
-            PrintUsage();
-            return 1;
-        }
+    auto host           = "postgresql-instance.cg4dwrdzyoeq.ap-south-1.rds.amazonaws.com";
+    auto dbname         = "testdb";
+    auto region         = "ap-south-1";
+    auto dbport         = 5432;
+    auto dbuser         = "db_user_tg";
+    auto iamTokenFlag   = true;
+    auto sslmode        = "verify-full";
+    auto sslrootcert    = "/home/tg/aws/rds-ca-2019-root.pem";
 
-        if (start_instance)
-        {
-            StartInstance(instance_id);
-        }
-        else
-        {
-            StopInstance(instance_id);
-        }
-    }*/
+    /////////////////////////////////////////////////////////////////////////////////////////
+    //  aws rds client - generate auth token
+    /////////////////////////////////////////////////////////////////////////////////////////
+
+    const auto config   = Aws::Client::ClientConfiguration("default");
+    auto rdsClient      = Aws::RDS::RDSClient(config);
+    auto passwordToken  = std::string(rdsClient.GenerateConnectAuthToken(host, region, dbport, dbuser));
+    
+    /////////////////////////////////////////////////////////////////////////////////////////
+    //  connection string builder
+    /////////////////////////////////////////////////////////////////////////////////////////
+
+    auto connStr        = aws_rds_demo::ConnStringBuilder(iamTokenFlag).GetConnString(host, dbname, dbuser, passwordToken, sslmode, sslrootcert);
+    aws_rds_demo::PrintInfo("Dumping connection string");
+    aws_rds_demo::PrintInfo(connStr.c_str());
+
+    
+    /////////////////////////////////////////////////////////////////////////////////////////
+    //  connect to postgreSQL
+    /////////////////////////////////////////////////////////////////////////////////////////
+
+    auto status = aws_rds_demo::ConnectToPostgresSql(connStr.c_str());
+
     Aws::ShutdownAPI(options);
     return 0;
 }
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////
+//  MAIN ENDS
+/////////////////////////////////////////////////////////////////////////////////////////
+
+
+namespace aws_rds_demo {
+
+
+
+    /////////////////////////////////////////////////////////////////////////////////////////
+    //  ConnectToPostgresSql
+    /////////////////////////////////////////////////////////////////////////////////////////
+
+    int ConnectToPostgresSql(const char *connString)
+    {
+        const char *conninfo;
+        PGconn     *conn;
+        PGresult   *res;
+        int         nFields;
+        int         i,
+                    j;
+        std::string errMsg;
+
+        conninfo = connString;
+
+        /* Make a connection to the database */
+        conn = PQconnectdb(conninfo);
+
+        /* Check to see that the backend connection was successfully made */
+        if (PQstatus(conn) != CONNECTION_OK)
+        {
+            errMsg = std::string(PQerrorMessage(conn));
+            PrintError(errMsg.c_str());
+            ExitNicely(conn);
+        }
+        PrintInfo("Connection established");
+
+        /* Start a transaction block */
+        res = PQexec(conn, "BEGIN");
+        if (PQresultStatus(res) != PGRES_COMMAND_OK)
+        {
+            errMsg = std::string("BEGIN command failed:");
+            errMsg += std::string(PQerrorMessage(conn));
+            PrintError(errMsg.c_str());
+            PQclear(res);
+            ExitNicely(conn);
+        }
+        PQclear(res);
+
+        PrintInfo("Transaction begun");
+
+        /*
+         * Fetch rows from pg_database, the system catalog of databases
+         */
+        res = PQexec(conn, "DECLARE myportal CURSOR FOR select * from testtbl2");
+        if (PQresultStatus(res) != PGRES_COMMAND_OK)
+        {
+            errMsg = std::string("DECLARE CURSOR failed:");
+            errMsg += std::string(PQerrorMessage(conn));
+            PrintError(errMsg.c_str());
+            PQclear(res);
+            ExitNicely(conn);
+        }
+        PQclear(res);
+        PrintInfo("Cursor loaded");
+
+        res = PQexec(conn, "FETCH ALL in myportal");
+        if (PQresultStatus(res) != PGRES_TUPLES_OK)
+        {
+            errMsg = std::string("FETCH ALL failed:");
+            errMsg += std::string(PQerrorMessage(conn));
+            PrintError(errMsg.c_str());
+            PQclear(res);
+            ExitNicely(conn);
+        }
+        PrintInfo("Results Fetched");
+
+        /* first, print out the attribute names */
+        nFields = PQnfields(res);
+        for (i = 0; i < nFields; i++)
+            printf("%-15s", PQfname(res, i));
+        printf("\n\n");
+
+        /* next, print out the rows */
+        for (i = 0; i < PQntuples(res); i++)
+        {
+            for (j = 0; j < nFields; j++)
+                printf("%-15s", PQgetvalue(res, i, j));
+            printf("\n");
+        }
+
+        PQclear(res);
+
+        /* close the portal ... we don't bother to check for errors ... */
+        res = PQexec(conn, "CLOSE myportal");
+        PQclear(res);
+
+        /* end the transaction */
+        res = PQexec(conn, "END");
+        PQclear(res);
+        PrintInfo("Transaction End");
+
+        /* close the connection to the database and cleanup */
+        PQfinish(conn);
+
+        return 0;
+    }
+
+    void ExitNicely(PGconn *conn)
+    {
+        PQfinish(conn);
+        exit(1);
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////
+    //  Print utils
+    /////////////////////////////////////////////////////////////////////////////////////////
+
+    void PrintInfo(const char *msg){
+        std::cout << "[INFO] " << msg  << std::endl;
+    }
+
+    void PrintError(const char *msg){
+        std::cerr << "[ERROR] " << msg  << std::endl;
+    }
+
+    void PrintDebug(const char *msg){
+        std::cout << "[DEBUG] " << msg  << std::endl;
+    }
+
+
+
+    /////////////////////////////////////////////////////////////////////////////////////////
+    //  ConnStringBuilder
+    /////////////////////////////////////////////////////////////////////////////////////////
+
+    ConnStringBuilder::ConnStringBuilder(bool isIAM){
+        InitConnString(isIAM);
+    }
+
+    std::string ConnStringBuilder::GetConnString(std::string host, std::string dbname, std::string user, std::string pwd, std::string sslmode, std::string sslrootcert){
+        BuildHost(host);
+        BuildDbname(dbname);
+        BuildUser(user);
+        BuildPassword(pwd);
+        BuildSslMode(sslmode);
+        BuildSslRootCert(sslrootcert);
+        return m_strConn;
+    }
+
+    void ConnStringBuilder::InitConnString(bool isIAM){
+        m_strConn   = "";
+        m_bIsIAM    = isIAM;
+    }
+
+    void ConnStringBuilder::BuildHost(std::string host){
+        m_strConn   += "host=";
+        m_strConn   += host;
+        m_strConn   += " ";
+    }
+
+    void ConnStringBuilder::BuildUser(std::string user){
+        m_strConn   += "user=";
+        m_strConn   += user;
+        m_strConn   += " ";
+    }
+
+    void ConnStringBuilder::BuildPassword(std::string password){
+        m_strConn   += "password=";
+        m_strConn   += password;
+        m_strConn   += " ";
+    }
+
+    void ConnStringBuilder::BuildDbname(std::string dbname){
+        m_strConn   += "dbname=";
+        m_strConn   += dbname;
+        m_strConn   += " ";
+    }
+
+    void ConnStringBuilder::BuildSslMode(std::string sslmode){
+        m_strConn   += "sslmode=";
+        m_strConn   += sslmode;
+        m_strConn   += " ";
+    }
+
+    void ConnStringBuilder::BuildSslRootCert(std::string sslrootcert){
+        m_strConn   += "sslrootcert=";
+        m_strConn   += sslrootcert;
+        m_strConn   += " ";
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
