@@ -16,6 +16,8 @@ namespace aws_rds_demo{
     void PrintError(const char *msg);
     void PrintDebug(const char *msg);
 
+    bool debug = false;
+
     //Connection string builder
     struct ConnStringBuilder{
 
@@ -30,6 +32,7 @@ namespace aws_rds_demo{
         void BuildDbname(std::string dbname);
         void BuildSslMode(std::string sslmode);
         void BuildSslRootCert(std::string sslrootcert);
+        void BuildKeyValue(std::string key, std::string val);
 
         std::string m_strConn;
         bool        m_bIsIAM;
@@ -74,8 +77,8 @@ int main(int argc, char** argv)
     /////////////////////////////////////////////////////////////////////////////////////////
 
     auto connStr        = aws_rds_demo::ConnStringBuilder(iamTokenFlag).GetConnString(host, dbname, dbuser, passwordToken, sslmode, sslrootcert);
-    aws_rds_demo::PrintInfo("Dumping connection string");
-    aws_rds_demo::PrintInfo(connStr.c_str());
+    aws_rds_demo::PrintDebug("Dumping connection string");
+    aws_rds_demo::PrintDebug(connStr.c_str());
 
     
     /////////////////////////////////////////////////////////////////////////////////////////
@@ -219,7 +222,9 @@ namespace aws_rds_demo {
     }
 
     void PrintDebug(const char *msg){
-        std::cout << "[DEBUG] " << msg  << std::endl;
+        if(debug){
+            std::cout << "[DEBUG] " << msg  << std::endl;
+        }
     }
 
 
@@ -248,38 +253,33 @@ namespace aws_rds_demo {
     }
 
     void ConnStringBuilder::BuildHost(std::string host){
-        m_strConn   += "host=";
-        m_strConn   += host;
-        m_strConn   += " ";
+        BuildKeyValue("host", host);
     }
 
     void ConnStringBuilder::BuildUser(std::string user){
-        m_strConn   += "user=";
-        m_strConn   += user;
-        m_strConn   += " ";
+        BuildKeyValue("user", user);
     }
 
     void ConnStringBuilder::BuildPassword(std::string password){
-        m_strConn   += "password=";
-        m_strConn   += password;
-        m_strConn   += " ";
+        BuildKeyValue("password", password);
     }
 
     void ConnStringBuilder::BuildDbname(std::string dbname){
-        m_strConn   += "dbname=";
-        m_strConn   += dbname;
-        m_strConn   += " ";
+        BuildKeyValue("dbname", dbname);
     }
 
     void ConnStringBuilder::BuildSslMode(std::string sslmode){
-        m_strConn   += "sslmode=";
-        m_strConn   += sslmode;
-        m_strConn   += " ";
+        BuildKeyValue("sslmode", sslmode);
     }
 
     void ConnStringBuilder::BuildSslRootCert(std::string sslrootcert){
-        m_strConn   += "sslrootcert=";
-        m_strConn   += sslrootcert;
+        BuildKeyValue("sslrootcert", sslrootcert);
+    }
+
+    void ConnStringBuilder::BuildKeyValue(std::string key, std::string val){
+        m_strConn   += key;
+        m_strConn   += "=";
+        m_strConn   += val;
         m_strConn   += " ";
     }
 
