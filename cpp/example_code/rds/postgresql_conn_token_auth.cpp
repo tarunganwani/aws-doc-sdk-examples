@@ -16,7 +16,7 @@ namespace aws_rds_demo{
     void PrintError(const char *msg);
     void PrintDebug(const char *msg);
 
-    bool debug = false;
+    bool debug = true;
 
     //Connection string builder
     struct ConnStringBuilder{
@@ -55,14 +55,18 @@ int main(int argc, char** argv)
     //  connection string values
     /////////////////////////////////////////////////////////////////////////////////////////
 
-    auto host           = "postgresql-instance.cg4dwrdzyoeq.ap-south-1.rds.amazonaws.com";
+    auto nlbhost           = "nlb-postgres-public-access-338bdd861265f8e5.elb.ap-south-1.amazonaws.com";
+    auto rdshost           = "postgres-instance-private.cg4dwrdzyoeq.ap-south-1.rds.amazonaws.com";
+    // auto rdshost           = "postgresql-instance.cg4dwrdzyoeq.ap-south-1.rds.amazonaws.com";    //public host
     auto dbname         = "testdb";
     auto region         = "ap-south-1";
     auto dbport         = 5432;
     auto dbuser         = "db_user_tg";
     auto iamTokenFlag   = true;
-    auto sslmode        = "verify-full";
-    auto sslrootcert    = "/home/tg/aws/rds-ca-2019-root.pem";
+    auto sslmode        = "require";
+    auto sslrootcert    = "";
+    //auto sslmode        = "verify-full";
+    //auto sslrootcert    = "/home/tg/aws/rds-ca-2019-root.pem";
 
     /////////////////////////////////////////////////////////////////////////////////////////
     //  aws rds client - generate auth token
@@ -70,13 +74,13 @@ int main(int argc, char** argv)
 
     const auto config   = Aws::Client::ClientConfiguration("default");
     auto rdsClient      = Aws::RDS::RDSClient(config);
-    auto passwordToken  = std::string(rdsClient.GenerateConnectAuthToken(host, region, dbport, dbuser));
+    auto passwordToken  = std::string(rdsClient.GenerateConnectAuthToken(rdshost, region, dbport, dbuser));
     
     /////////////////////////////////////////////////////////////////////////////////////////
     //  connection string builder
     /////////////////////////////////////////////////////////////////////////////////////////
 
-    auto connStr        = aws_rds_demo::ConnStringBuilder(iamTokenFlag).GetConnString(host, dbname, dbuser, passwordToken, sslmode, sslrootcert);
+    auto connStr        = aws_rds_demo::ConnStringBuilder(iamTokenFlag).GetConnString(nlbhost, dbname, dbuser, passwordToken, sslmode, sslrootcert);
     aws_rds_demo::PrintDebug("Dumping connection string");
     aws_rds_demo::PrintDebug(connStr.c_str());
 
@@ -142,9 +146,11 @@ namespace aws_rds_demo {
         /*
          * Fetch rows from pg_database, the system catalog of databases
          */
-        res = PQexec(conn, "DECLARE myportal CURSOR FOR select * from testtbl2");
-        if (PQresultStatus(res) != PGRES_COMMAND_OK)
+        // res = PQexec(conn, "DECLARE myportal CURSOR FOR select * from testtbl2");
+        res = PQexec(conn, "call selectproctest('myportal')");
+        if (PQresultStatus(res) != PGRES_COMMAND_OK && PQresultStatus(res) != PGRES_TUPLES_OK)
         {
+            std::cerr << PQresultStatus(res) << std::endl;
             errMsg = std::string("DECLARE CURSOR failed:");
             errMsg += std::string(PQerrorMessage(conn));
             PrintError(errMsg.c_str());
