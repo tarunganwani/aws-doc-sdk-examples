@@ -1,0 +1,76 @@
+########## #username passwordauth
+
+psql "host=3.6.112.137 dbname=testdb user=postgres password=password"
+
+> nlb
+psql "host=nlb-postgres-public-access-338bdd861265f8e5.elb.ap-south-1.amazonaws.com dbname=testdb user=postgres password=password"
+
+
+
+########## IAM
+
+create db user with iam role grants
+https://aws.amazon.com/premiumsupport/knowledge-center/rds-postgresql-connect-using-iam/
+
+https://www.youtube.com/watch?v=o4Sf5Z6E2lk
+
+CREATE USER db_user_tg WITH LOGIN; 
+GRANT rds_iam TO db_user_tg;
+
+grant priveleges 
+GRANT ALL PRIVILEGES ON DATABASE "testdb" to db_user_tg;
+GRANT ALL PRIVILEGES ON DATABASE "testdb" to db_user_tg;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO db_user_tg;
+
+export RDSHOST="postgresql-instance.cg4dwrdzyoeq.ap-south-1.rds.amazonaws.com"
+export PGPASSWORD="$(aws rds generate-db-auth-token --hostname $RDSHOST --port 5432 --region ap-south-1 --username db_user_tg)"
+wget https://s3.amazonaws.com/rds-downloads/rds-ca-2019-root.pem
+
+psql -h $RDSHOST -p 5432 "dbname=testdb user=db_user_tg sslmode=verify-full sslrootcert=rds-ca-2019-root.pem"
+OR
+psql "host=postgresql-instance.cg4dwrdzyoeq.ap-south-1.rds.amazonaws.com dbname=testdb user=db_user_tg sslmode=verify-full sslrootcert=rds-ca-2019-root.pem"
+OR
+psql "host=postgresql-instance.cg4dwrdzyoeq.ap-south-1.rds.amazonaws.com dbname=testdb user=db_user_tg sslmode=verify-full sslrootcert=/home/tg/aws/rds-ca-2019-root.pem"
+
+
+
+########## IAM ######### NLB 
+
+
+>> working IAM token connection string solution for public nlb over private database instance
+	
+	Step1 : create token usin RDS hostname
+
+	export RDSHOST="postgres-instance-private.cg4dwrdzyoeq.ap-south-1.rds.amazonaws.com"
+	export PGPASSWORD="$(aws rds generate-db-auth-token --hostname $RDSHOST --port 5432 --region ap-south-1 --username db_user_tg)"
+
+	Step2 : create psql connection using nlb host as host
+
+	psql "host=nlb-postgres-public-access-338bdd861265f8e5.elb.ap-south-1.amazonaws.com dbname=testdb user=db_user_tg sslmode=require"
+
+
+>> non working solutions
+
+	> private db
+
+	export RDSHOST="postgres-instance-private.cg4dwrdzyoeq.ap-south-1.rds.amazonaws.com"
+	export PGPASSWORD="$(aws rds generate-db-auth-token --hostname $RDSHOST --port 5432 --region ap-south-1 --username db_user_tg)"
+	psql "host=postgres-instance-private.cg4dwrdzyoeq.ap-south-1.rds.amazonaws.com dbname=testdb user=db_user_tg sslmode=require"
+
+	> public nlb
+
+	export RDSHOST="nlb-postgres-public-access-338bdd861265f8e5.elb.ap-south-1.amazonaws.com"
+	export PGPASSWORD="$(aws rds generate-db-auth-token --hostname $RDSHOST --port 5432 --region ap-south-1 --username db_user_tg)"
+	psql "host=nlb-postgres-public-access-338bdd861265f8e5.elb.ap-south-1.amazonaws.com dbname=testdb user=db_user_tg sslmode=verify-full sslrootcert=/home/tg/aws/rds-ca-2019-root.pem"
+	psql "host=nlb-postgres-public-access-338bdd861265f8e5.elb.ap-south-1.amazonaws.com dbname=testdb user=db_user_tg sslmode=require"
+
+
+
+
+## IAM ## running test C Client code
+
+~/WS/postgres/src/test/examples/testlibpq-testdb  "host=postgresql-instance.cg4dwrdzyoeq.ap-south-1.rds.amazonaws.com dbname=testdb user=db_user_tg sslmode=verify-full sslrootcert=/home/tg/aws/rds-ca-2019-root.pem"
+
+## IAM ## trouble shooting
+
+https://stackoverflow.com/questions/53579171/amazon-rds-iam-pam-auth-failed
